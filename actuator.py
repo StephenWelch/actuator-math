@@ -36,7 +36,7 @@ class JointData:
         self.dof = np.array(self.dof)
         self.actuator_origins = np.array(self.actuator_origins)
 
-        self.actuator_forces = [0.0] * len(self.actuator_origins)
+        self.actuator_forces = np.zeros(len(self.actuator_origins))
         self.torques = np.zeros(self.dof.shape)
         self.angles = np.zeros(self.dof.shape)
 
@@ -76,9 +76,6 @@ class JointData:
             for r in range(actuator_origins.shape[0]):
                 actuator_origins[r, :] = self.parent.joint_rot_matrix().apply(actuator_origins[r, :])
             actuator_origins = actuator_origins + self.parent.rotated_origin()
-
-
-        
 
         return actuator_origins
 
@@ -125,13 +122,21 @@ RL5_ANK = JointData(
 ALL_JOINTS = [RL1_HIP_YAW_ROL, RL3_HIP_PIT, RL4_KNE_PIT, RL5_ANK]
 
 def force_to_torque(joint: JointData):
-    actuator_vecs = joint.actuator_forces[:, 1] - joint.actuator_forces[:, 0]
-    actuator_forces = np.linalg.norm(actuator_vecs, axis=2).dot(joint.actuator_forces)
-    return np.cross(joint.rotated_actuator_origins(), actuator_forces)
+    rotated_end_points = joint.rotated_actuator_origins()
+
+    actuator_vecs = rotated_end_points[:, 1] - rotated_end_points[:, 0]
+    actuator_dirs = actuator_vecs / np.linalg.norm(actuator_vecs, axis=1)
+    # print(actuator_vecs)
+    actuator_forces = actuator_dirs * joint.actuator_forces
+    # print(actuator_forces)
+    return np.cross(joint.rotated_actuator_origins()[:, 1], actuator_forces)
 
 
 
 def torque_to_force(joint: JointData):
-    actuator_vecs = joint.actuator_forces[:, 1] - joint.actuator_forces[:, 0]
-    actuator_forces = np.linalg.norm(joint.rotated_actuator_origins(), axis=2).dot(joint.actuator_forces)
-    return np.cross(actuator_forces, joint.torques) / actuator_vecs ** 2
+    actuator_vecs = joint.actuator_origins[:, 1] - joint.actuator_origins[:, 0]
+    actuator_dirs = actuator_vecs / np.linalg.norm(actuator_vecs, axis=1)
+
+    actuator_forces = .cross(joint.torques) / 
+
+    np.linalg.norm(actuator_forces, axis=1) / actuator_forces.dot(actuator_dirs.T)
