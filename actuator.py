@@ -63,7 +63,7 @@ class JointData:
 
         return self.origin
 
-    def rotated_actuator_origins(self) -> np.ndarray:
+    def rotated_actuator_origins(self, chain: bool = True) -> np.ndarray:
         actuator_origins = self.actuator_origins
 
         actuator_origins = self.actuator_origins - self.origin
@@ -71,7 +71,7 @@ class JointData:
             actuator_origins[r][1] = self.joint_rot_matrix().apply(actuator_origins[r][1])
         actuator_origins = actuator_origins + self.origin
         
-        if self.parent:
+        if self.parent and chain:
             actuator_origins = actuator_origins - self.parent.rotated_origin()
             for r in range(actuator_origins.shape[0]):
                 actuator_origins[r, :] = self.parent.joint_rot_matrix().apply(actuator_origins[r, :])
@@ -122,21 +122,38 @@ RL5_ANK = JointData(
 ALL_JOINTS = [RL1_HIP_YAW_ROL, RL3_HIP_PIT, RL4_KNE_PIT, RL5_ANK]
 
 def force_to_torque(joint: JointData):
-    rotated_end_points = joint.rotated_actuator_origins()
+    # Make origins relative to joint origin.
+    rotated_actuator_origins = joint.actuator_origins - joint.origin
+    # For each row (actuator) in actuator_origins, rotate the actuator end point by the joint angle.
+    for r in range(rotated_actuator_origins.shape[0]):
+        rotated_actuator_origins[r][1] = joint.joint_rot_matrix().apply(rotated_actuator_origins[r][1])
 
-    actuator_vecs = rotated_end_points[:, 1] - rotated_end_points[:, 0]
-    actuator_dirs = actuator_vecs / np.linalg.norm(actuator_vecs, axis=1)
-    # print(actuator_vecs)
-    actuator_forces = actuator_dirs * joint.actuator_forces
-    # print(actuator_forces)
-    return np.cross(joint.rotated_actuator_origins()[:, 1], actuator_forces)
-
+    # Get vector from start of actuator to rotated end of actuator.
+    rotated_actuator_vecs = rotated_actuator_origins[:, 1] - rotated_actuator_origins[:, 0]
+    # Get direction of each actuator
+    rotated_actuator_dirs = rotated_actuator_vecs / np.linalg.norm(rotated_actuator_vecs, axis=1)
+    # Get force applied to each actuator
+    actuator_forces = rotated_actuator_dirs * joint.actuator_forces
+    # Get torque applied by each actuator to the joint
+    torque = np.cross(rotated_actuator_origins[:, 1], actuator_forces)
+    return torque
 
 
 def torque_to_force(joint: JointData):
-    actuator_vecs = joint.actuator_origins[:, 1] - joint.actuator_origins[:, 0]
-    actuator_dirs = actuator_vecs / np.linalg.norm(actuator_vecs, axis=1)
+    # Make origins relative to joint origin.
+    rotated_actuator_origins = joint.actuator_origins - joint.origin
+    # For each row (actuator) in actuator_origins, rotate the actuator end point by the joint angle.
+    for r in range(rotated_actuator_origins.shape[0]):
+        rotated_actuator_origins[r][1] = joint.joint_rot_matrix().apply(rotated_actuator_origins[r][1])
 
-    actuator_forces = .cross(joint.torques) / 
+    # Get vector from start of actuator to rotated end of actuator.
+    rotated_actuator_vecs = rotated_actuator_origins[:, 1] - rotated_actuator_origins[:, 0]
+    # Get direction of each actuator
+    rotated_actuator_dirs = rotated_actuator_vecs / np.linalg.norm(rotated_actuator_vecs, axis=1)
 
-    np.linalg.norm(actuator_forces, axis=1) / actuator_forces.dot(actuator_dirs.T)
+    # Rotated end position x torque
+    cross = np.cross(rotated_actuator_origins[:, 1], joint.torques)
+    cross = cross / rotated_actuator_origins[:, 1].dot(rotated_actuator_origins[:, 1].T)
+    # print(rotated_actuator_origins[:, 1])
+    # print(rotated_actuator_origins[:, 1].dot(rotated_actuator_origins[:, 1].T))
+    return np.linalg.norm(cross) / (cross / np.linalg.norm(cross)).dot(rotated_actuator_dirs.T)
