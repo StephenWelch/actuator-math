@@ -2,7 +2,8 @@ import math
 from typing import Tuple
 import numpy as np
 import matplotlib.pyplot as plt
-from actuator import ALL_JOINTS, RL4_KNE_PIT, RL5_ANK, JointData, force_to_torque, torque_to_force
+from actuator import JointData
+from joint_defs import RL4_KNE_PIT, RL5_ANK, ALL_JOINTS
 from mpl_toolkits import mplot3d
 from matplotlib.widgets import Slider, Button
 
@@ -89,9 +90,9 @@ def add_single_force_slider(ax, joint: JointData, label: str, magnitude_range: T
     def update(val):
         joint.actuator_forces[actuator] = val
         force_setpoint = val
-        t = force_to_torque(joint)
+        t = joint.force_to_torque()
         joint.torques = t
-        f = torque_to_force(joint)
+        f = joint.torque_to_force()
         ax.clear()
         plot_all()
 
@@ -101,18 +102,13 @@ def add_single_force_slider(ax, joint: JointData, label: str, magnitude_range: T
         
     slider.on_changed(update)
     return slider
+
 def main():
-    
-
-    
-
     knee_angle_slider = add_angle_slider(ax, RL4_KNE_PIT, 'Knee Pitch', (-90, 90), 0)
     knee_force_slider = add_single_force_slider(ax, RL4_KNE_PIT, 'Knee Force', (0, 100), 0)
     ankle_pitch_slider = add_angle_slider(ax, RL5_ANK, 'Ankle Pitch', (-90, 90), 0)
-    
 
     plot_all()
-
     plt.show()
 
 if __name__ == '__main__':
