@@ -89,11 +89,9 @@ class JointData:
         rotated_actuator_vecs = rotated_actuator_origins[:, 1] - rotated_actuator_origins[:, 0]
         # Get direction of each actuator
         rotated_actuator_dirs = rotated_actuator_vecs / np.linalg.norm(rotated_actuator_vecs, axis=1)
-        # Get force applied to each actuator
-        actuator_forces = rotated_actuator_dirs * self.actuator_forces
-        # Get torque applied by each actuator to the joint
-        torque = np.cross(rotated_actuator_origins[:, 1], actuator_forces)
-        # TODO TODO TODO
+        # Get direction of torques and scale by forces
+        torque = np.cross(rotated_actuator_origins[:, 1], rotated_actuator_dirs).dot(self.actuator_forces.T)
+
         return -torque
 
     def torque_to_force(self):
@@ -109,8 +107,11 @@ class JointData:
         rotated_actuator_dirs = rotated_actuator_vecs / np.linalg.norm(rotated_actuator_vecs, axis=1)
 
         # Rotated end position x torque
-        cross = np.cross(rotated_actuator_origins[:, 1], self.torques)
-        cross = cross / rotated_actuator_origins[:, 1].dot(rotated_actuator_origins[:, 1].T)
-        # print(rotated_actuator_origins[:, 1])
-        # print(rotated_actuator_origins[:, 1].dot(rotated_actuator_origins[:, 1].T))
-        return np.linalg.norm(cross) / (cross / np.linalg.norm(cross)).dot(rotated_actuator_dirs.T)
+        cross = np.cross(rotated_actuator_origins[:, 1], self.torques).T
+        # Make square if < 3 actuators
+        cross = np.pad(cross, ((0, 0), (0, 3 - len(cross))))
+        # inv = np.linalg.pinv(cross)
+        # force = inv.dot(self.torques.T)
+        force = np.linalg.lstsq(cross, self.torques.T)
+
+        return force
