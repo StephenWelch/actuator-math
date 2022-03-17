@@ -17,4 +17,4 @@ class ActuatorTest(TestCase):
             j.torques = calculated_torque
             calculated_force = j.torque_to_force()
             ...
-            assert calculated_force.item() == pytest.approx(10)
+            assert calculated_force == pytest.approx(10)
