@@ -88,9 +88,9 @@ class JointData:
         # Get vector from start of actuator to rotated end of actuator.
         rotated_actuator_vecs = rotated_actuator_origins[:, 1] - rotated_actuator_origins[:, 0]
         # Get direction of each actuator
-        rotated_actuator_dirs = rotated_actuator_vecs / np.linalg.norm(rotated_actuator_vecs, axis=1)
+        rotated_actuator_dirs = rotated_actuator_vecs / np.linalg.norm(rotated_actuator_vecs, axis=1)[:, np.newaxis]
         # Get direction of torques and scale by forces
-        torque = np.cross(rotated_actuator_dirs, rotated_actuator_origins[:, 1]).dot(self.actuator_forces.T)
+        torque = np.cross(rotated_actuator_dirs, rotated_actuator_origins[:, 1]).T.dot(self.actuator_forces.T)
 
         return torque
 
@@ -104,9 +104,9 @@ class JointData:
         # Get vector from start of actuator to rotated end of actuator.
         rotated_actuator_vecs = rotated_actuator_origins[:, 1] - rotated_actuator_origins[:, 0]
         # Get direction of each actuator
-        rotated_actuator_dirs = rotated_actuator_vecs / np.linalg.norm(rotated_actuator_vecs, axis=1)
+        rotated_actuator_dirs = rotated_actuator_vecs / np.linalg.norm(rotated_actuator_vecs, axis=1)[:, np.newaxis]
 
         torque_dirs = np.cross(rotated_actuator_dirs, rotated_actuator_origins[:, 1]).T
-        force = np.linalg.lstsq(torque_dirs, self.torques.T)
+        force = np.linalg.lstsq(torque_dirs, self.torques)
 
-        return force[0].item()
+        return force[0]
