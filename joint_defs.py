@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import List
+
 from actuator import JointData
 
 RL1_HIP_YAW_ROL = JointData(
@@ -37,3 +39,6 @@ RL5_ANK = JointData(
     ]
 )
 ALL_JOINTS = [RL1_HIP_YAW_ROL, RL3_HIP_PIT, RL4_KNE_PIT, RL5_ANK]
+
+def get_n_actuator_joints(n: int) -> List[JointData]:
+    return list(filter(lambda j: len(j.actuator_origins) == n, ALL_JOINTS))
