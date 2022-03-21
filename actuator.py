@@ -3,24 +3,16 @@ from dataclasses import dataclass
 import math
 import numpy as np
 from typing import List
+
+import pandas as pd
 from scipy.spatial.transform import Rotation as R
 from mpl_toolkits.mplot3d.axes3d import Axes3D
-
-def rotate(origin, point, angle):
-    """
-    Rotate a point counterclockwise by a given angle around a given origin.
-
-    The angle should be given in radians.
-    """
-    ox, oy = origin
-    px, py = point
-
-    qx = ox + math.cos(angle) * (px - ox) - math.sin(angle) * (py - oy)
-    qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
-    return qx, qy
+import plotly.graph_objects as go
+import plotly.express as px
 
 @dataclass
 class JointData:
+    name: str
     parent: JointData
     origin: np.ndarray
     dof: np.ndarray
@@ -42,34 +34,54 @@ class JointData:
     def num_dof(self) -> int:
         return self.dof.count_nonzero()
 
-    def plot(self, ax: Axes3D) -> List:
+    def plot_matplotlib(self, ax: Axes3D) -> List:
         origin = self.rotated_origin()
         ax.scatter3D(origin[0], origin[1], origin[2])
         actuator_origins = self.rotated_actuator_origins()
         for i in range(len(actuator_origins)):
             ax.plot3D(
                 actuator_origins[i, :, 0].flatten(),
-                actuator_origins[i, :, 1].flatten(), 
+                actuator_origins[i, :, 1].flatten(),
                 actuator_origins[i, :, 2].flatten())
+
+    def plot_plotly(self, fig: go.Figure):
+        origin = self.rotated_origin()
+        actuator_origins = self.rotated_actuator_origins()
+        for i in range(len(actuator_origins)):
+            fig.add_scatter3d(
+                name=self.name + ' Actuator',
+                x=actuator_origins[i, :, 0].flatten(),
+                y=actuator_origins[i, :, 1].flatten(),
+                z=actuator_origins[i, :, 2].flatten(),
+                marker=dict(size=4),
+                line=dict(color='blue')
+            )
+        fig.add_scatter3d(
+            name=self.name + ' Origin',
+            x=origin[0:1],
+            y=origin[1:2],
+            z=origin[2:3],
+            marker=dict(size=6, color='red')
+        )
+
 
     def joint_rot_matrix(self) -> R:
         return R.from_euler('XYZ', self.angles)
-        
+
     def rotated_origin(self) -> np.ndarray:
         # Rotate origin based on parent joint angle
         if self.parent:
-            return self.parent.joint_rot_matrix().apply(self.origin - self.parent.rotated_origin()) + self.parent.rotated_origin()
+            return self.parent.joint_rot_matrix().apply(
+                self.origin - self.parent.rotated_origin()) + self.parent.rotated_origin()
 
         return self.origin
 
     def rotated_actuator_origins(self, chain: bool = True) -> np.ndarray:
-        actuator_origins = self.actuator_origins
-
         actuator_origins = self.actuator_origins - self.origin
         for r in range(actuator_origins.shape[0]):
             actuator_origins[r][1] = self.joint_rot_matrix().apply(actuator_origins[r][1])
         actuator_origins = actuator_origins + self.origin
-        
+
         if self.parent and chain:
             actuator_origins = actuator_origins - self.parent.rotated_origin()
             for r in range(actuator_origins.shape[0]):

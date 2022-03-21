@@ -21,7 +21,7 @@ def plot_all():
     ax.axes.set_ylim3d(bottom=-500, top=500) 
     ax.axes.set_zlim3d(bottom=-1500, top=0) 
     for joint in ALL_JOINTS:
-        joint.plot(ax)
+        joint.plot_matplotlib(ax)
 
     limits = np.array([getattr(ax, f'get_{axis}lim')() for axis in 'xyz'])
     ax.set_box_aspect(np.ptp(limits, axis = 1))

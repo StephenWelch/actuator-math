@@ -5,6 +5,7 @@ from typing import List
 from actuator import JointData
 
 RL1_HIP_YAW_ROL = JointData(
+    'Right Hip Yaw/Roll',
     None,
     [-119, 0, -275],
     [0, 0, 1],
@@ -14,6 +15,7 @@ RL1_HIP_YAW_ROL = JointData(
     ]
 )
 RL3_HIP_PIT = JointData(
+    'Right Hip Pitch',
     RL1_HIP_YAW_ROL,
     [-119, 1.7, -330],
     [0, 1, 0],
@@ -22,6 +24,7 @@ RL3_HIP_PIT = JointData(
     ]
 )
 RL4_KNE_PIT = JointData(
+    'Right Knee Pitch',
     RL3_HIP_PIT,
     [-119, 2.5, -778],
     [0, 1, 0],
@@ -30,6 +33,7 @@ RL4_KNE_PIT = JointData(
     ]
 )
 RL5_ANK = JointData(
+    'Right Ankle Pitch/Roll',
     RL4_KNE_PIT,
     [-119, 6, -1213],
     [1, 1, 0],
