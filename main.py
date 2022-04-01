@@ -14,7 +14,8 @@ horizontal_slider_ct = 1
 vertical_slider_ct = 1
 
 def log_calc(joint):
-        ...
+    print(f"{joint.angles}")
+    ...
 
 def plot_all():
     ax.axes.set_xlim3d(left=-500, right=500) 

@@ -1,4 +1,3 @@
-import json
 import math
 
 import plotly.graph_objects as go
@@ -40,7 +39,7 @@ def plot_all() -> go.Figure():
     return fig
 
 
-selected_joint: JointData = None
+selected_joint: JointData = joint_defs.RL4_KNE_PIT
 angle_slider_params = dict(value=0, marks=None, updatemode='drag',
                            tooltip={'placement': 'bottom', 'always_visible': True})
 fig: go.Figure = plot_all()
@@ -85,7 +84,7 @@ def update_graph(yaw_value, pitch_value, roll_value):
 
 @app.callback(
     [
-        Output('selected-joint')
+        Output('selected-joint', 'figure'),
         Output('selected-joint-label', 'children')
     ],
     Input('graph', 'clickData')

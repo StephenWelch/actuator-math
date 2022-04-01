@@ -121,6 +121,13 @@ class JointData:
         rotated_actuator_dirs = rotated_actuator_vecs / np.linalg.norm(rotated_actuator_vecs, axis=1)[:, np.newaxis]
 
         torque_dirs = np.cross(rotated_actuator_dirs, rotated_actuator_origins[:, 1]).T
-        force = np.linalg.lstsq(torque_dirs, self.torques)
+
+        # Remove torques from unused DoFs
+        # torque_setpt = self.torques
+        torque_dirs = np.delete(torque_dirs, self.dof == 0, axis=0)
+        torque_setpt = np.delete(self.torques, self.dof == 0, axis=0)
+
+        # force = np.linalg.lstsq(torque_dirs, torque_setpt, rcond=None)
+        force = np.linalg.inv(torque_dirs) @ torque_setpt
 
         return force[0]
