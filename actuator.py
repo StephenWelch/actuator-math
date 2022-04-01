@@ -44,8 +44,18 @@ class JointData:
                 actuator_origins[i, :, 1].flatten(),
                 actuator_origins[i, :, 2].flatten())
 
-    def plot_plotly(self, fig: go.Figure):
+    def plot_origins_plotly(self, fig: go.Figure):
         origin = self.rotated_origin()
+        fig.add_scatter3d(
+            name=self.name + ' Origin',
+            x=origin[0:1],
+            y=origin[1:2],
+            z=origin[2:3],
+            marker=dict(size=6, color='red')
+        )
+        return fig
+
+    def plot_actuators_plotly(self, fig: go.Figure):
         actuator_origins = self.rotated_actuator_origins()
         for i in range(len(actuator_origins)):
             fig.add_scatter3d(
@@ -56,14 +66,6 @@ class JointData:
                 marker=dict(size=4),
                 line=dict(color='blue')
             )
-        fig.add_scatter3d(
-            name=self.name + ' Origin',
-            x=origin[0:1],
-            y=origin[1:2],
-            z=origin[2:3],
-            marker=dict(size=6, color='red')
-        )
-
 
     def joint_rot_matrix(self) -> R:
         return R.from_euler('XYZ', self.angles)
