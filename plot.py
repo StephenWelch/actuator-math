@@ -2,9 +2,8 @@ import math
 
 import plotly.graph_objects as go
 import dash
-from dash import dcc, html, Input, Output
+from dash import dcc, html, Input, Output, State
 import joint_defs
-from actuator import JointData
 
 
 def plot_all() -> go.Figure():
@@ -39,7 +38,6 @@ def plot_all() -> go.Figure():
     return fig
 
 
-selected_joint: JointData = joint_defs.RL4_KNE_PIT
 angle_slider_params = dict(value=0, marks=None, updatemode='drag',
                            tooltip={'placement': 'bottom', 'always_visible': True})
 fig: go.Figure = plot_all()
@@ -47,6 +45,7 @@ fig: go.Figure = plot_all()
 app = dash.Dash()
 app.layout = html.Div([
     dcc.Graph(id='graph', figure=fig),
+    dcc.Store(id='selected-joint', ),
     html.Div([html.Label('Selected Joint: None')], id='selected-joint-label'),
     html.Div([
         html.Label('Yaw'),
@@ -64,42 +63,35 @@ app.layout = html.Div([
 
 
 @app.callback(
-    Output('graph', 'figure'),
     [
-        Input('selected-joint', 'value'),
-        Input('yaw-slider', 'value'),
-        Input('pitch-slider', 'value'),
-        Input('roll-slider', 'value')
-    ]
-)
-def update_graph(yaw_value, pitch_value, roll_value):
-    if selected_joint:
-        app.logger.info(f"Setting value of {selected_joint.name}: {yaw_value}, {pitch_value}, {roll_value}")
-        selected_joint.angles[1] = math.radians(yaw_value)
-        selected_joint.angles[0] = math.radians(pitch_value)
-        selected_joint.angles[2] = math.radians(roll_value)
-
-    return plot_all()
-
-
-@app.callback(
-    [
-        Output('selected-joint', 'figure'),
+        Output('graph', 'figure'),
         Output('selected-joint-label', 'children')
     ],
-    Input('graph', 'clickData')
+    [
+        Input('yaw-slider', 'value'),
+        Input('pitch-slider', 'value'),
+        Input('roll-slider', 'value'),
+        Input('graph', 'clickData')
+    ],
+    State('selected-joint', 'data')
 )
-def update_click(click_data):
-    selected_joint_label: html.Label = None
+def update_graph(yaw_value, pitch_value, roll_value, click_data, selected_joint):
+    selected_joint_label = html.Label(f"Selected Joint: None")
     # app.logger.info(f"{json.dumps(click_data, indent=4)}")
     if click_data:
-        selected_origin_curve_num = click_data['points'][0]['curveNumber']
-        selected_joint = joint_defs.ALL_JOINTS[selected_origin_curve_num - 1]
+        joint_idx = click_data['points'][0]['curveNumber'] - 1
+        selected_joint = joint_defs.ALL_JOINTS[joint_idx]
         selected_joint_label = html.Label(f"Selected Joint: {selected_joint.name}")
-    else:
-        selected_joint_label = html.Label('Selected Joint: None')
+        selected_joint = joint_idx
 
-    return selected_joint_label
+    if selected_joint is not None:
+        joint = joint_defs.ALL_JOINTS[selected_joint]
+        # app.logger.info(f"Setting value of {joint.name}: {yaw_value}, {pitch_value}, {roll_value}")
+        joint.angles[1] = joint.dof[1] * math.radians(yaw_value)
+        joint.angles[0] = joint.dof[0] * math.radians(pitch_value)
+        joint.angles[2] = joint.dof[2] * math.radians(roll_value)
+
+    return plot_all(), selected_joint_label
 
 
 if __name__ == '__main__':
