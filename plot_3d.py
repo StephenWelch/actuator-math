@@ -31,6 +31,7 @@ def plot_all() -> go.Figure():
         ),
         clickmode='event+select'
     )
+    # fig.update_scenes(xaxis_visible=False, yaxis_visible=False, zaxis_visible=False)
     # Plot all origins before all actuators so it's easy to identify the clicked origin by curveNumber
     for j in joint_defs.ALL_JOINTS:
         j.plot_origins_plotly(fig)
