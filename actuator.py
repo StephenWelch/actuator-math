@@ -56,8 +56,33 @@ class JointData:
         return fig
 
     def plot_actuators_plotly(self, fig: go.Figure):
+        origin = self.rotated_origin()
         actuator_origins = self.rotated_actuator_origins()
+
+        # Find the nearest actuator mount points and draw lines to them
+        actuator_origins_flattened = actuator_origins.reshape(-1, 3)
+        dist_from_origin = np.linalg.norm(origin - actuator_origins_flattened, axis=1)
+
+        closest_mounts = actuator_origins_flattened[np.argsort(dist_from_origin)[:len(actuator_origins)]]
+
+        for i in range(len(closest_mounts)):
+            fig.add_scatter3d(
+                name=self.name + ' Actuator mount',
+                x=[origin[0]] + [closest_mounts[i][0]],
+                y=[origin[1]] + [closest_mounts[i][1]],
+                z=[origin[2]] + [closest_mounts[i][2]],
+                mode='lines',
+                line=dict(width=10, color='black', dash='dot')
+            )
         for i in range(len(actuator_origins)):
+            # fig.add_scatter3d(
+            #     name=self.name + ' Actuator mount',
+            #     x=[origin[0]] + [actuator_origins[i, 1, 0]],
+            #     y=[origin[1]] + [actuator_origins[i, 1, 1]],
+            #     z=[origin[2]] + [actuator_origins[i, 1, 2]],
+            #     marker=dict(size=4),
+            #     line=dict(color='black')
+            # )
             fig.add_scatter3d(
                 name=self.name + ' Actuator',
                 x=actuator_origins[i, :, 0].flatten(),
