@@ -1,10 +1,11 @@
+import json
+import logging
 import math
 
 import plotly.graph_objects as go
 import dash
 from dash import dcc, html, Input, Output, State
 import joint_defs
-
 
 def plot_all() -> go.Figure():
     fig = go.Figure()
@@ -44,6 +45,7 @@ angle_slider_params = dict(value=0, marks=None, updatemode='drag',
 fig: go.Figure = plot_all()
 
 app = dash.Dash()
+app.logger.setLevel(level=logging.DEBUG)
 app.layout = html.Div([
     dcc.Graph(id='graph', figure=fig),
     dcc.Store(id='selected-joint', ),
@@ -87,7 +89,7 @@ def update_graph(yaw_value, pitch_value, roll_value, click_data, selected_joint)
 
     if selected_joint is not None:
         joint = joint_defs.ALL_JOINTS[selected_joint]
-        # app.logger.info(f"Setting value of {joint.name}: {yaw_value}, {pitch_value}, {roll_value}")
+        app.logger.debug(f"Setting value of {joint.name}: {math.radians(yaw_value)}, {math.radians(pitch_value)}, {math.radians(roll_value)}")
         joint.angles[1] = joint.dof[1] * math.radians(yaw_value)
         joint.angles[0] = joint.dof[0] * math.radians(pitch_value)
         joint.angles[2] = joint.dof[2] * math.radians(roll_value)

@@ -23,9 +23,9 @@ class JointData:
     angles: np.ndarray = np.array([])
 
     def __post_init__(self):
-        self.origin = np.array(self.origin)
+        self.origin = np.array(self.origin) / 1000  # mm -> cm -> m
         self.dof = np.array(self.dof)
-        self.actuator_origins = np.array(self.actuator_origins)
+        self.actuator_origins = np.array(self.actuator_origins) / 1000
 
         self.actuator_forces = np.zeros(len(self.actuator_origins))
         self.torques = np.zeros(self.dof.shape)
