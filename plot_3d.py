@@ -50,18 +50,29 @@ app.layout = html.Div([
     dcc.Graph(id='graph', figure=fig),
     dcc.Store(id='selected-joint', ),
     html.Div([html.Label('Selected Joint: None')], id='selected-joint-label'),
+    # html.Div([
+    #     html.Label('Yaw'),
+    #     dcc.Slider(-90, 90, 1, id='yaw-slider', **angle_slider_params)
+    # ], id='yaw-slider-div'),
+    # html.Div([
+    #     html.Label('Pitch'),
+    #     dcc.Slider(-90, 90, 1, id='pitch-slider', **angle_slider_params)
+    # ], id='pitch-slider-div'),
+    # html.Div([
+    #     html.Label('Roll'),
+    #     dcc.Slider(-90, 90, 1, id='roll-slider', **angle_slider_params)
+    # ], id='roll-slider-div')
     html.Div([
-        html.Label('Yaw'),
-        dcc.Slider(-90, 90, 1, id='yaw-slider', **angle_slider_params)
-    ], id='yaw-slider-div'),
+        dcc.Input(id='yaw-input', type='number', placeholder='Yaw'),
+        dcc.Input(id='pitch-input', type='number', placeholder='Pitch'),
+        dcc.Input(id='roll-input', type='number', placeholder='Roll'),
+    ], id='angle-input-div'),
     html.Div([
-        html.Label('Pitch'),
-        dcc.Slider(-90, 90, 1, id='pitch-slider', **angle_slider_params)
-    ], id='pitch-slider-div'),
-    html.Div([
-        html.Label('Roll'),
-        dcc.Slider(-90, 90, 1, id='roll-slider', **angle_slider_params)
-    ], id='roll-slider-div')
+        dcc.Input(id='torque-yaw-input', type='number', placeholder='Torque Yaw'),
+        dcc.Input(id='torque-pitch-input', type='number', placeholder='Torque Pitch'),
+        dcc.Input(id='torque-roll-input', type='number', placeholder='Torque Roll'),
+    ], id='torque-input-div'),
+    # TODO force input
 ])
 
 
