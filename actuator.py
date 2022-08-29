@@ -24,7 +24,7 @@ class JointData:
 
     def __post_init__(self):
         self.origin = np.array(self.origin) / 1000  # mm -> cm -> m
-        self.dof = np.array(self.dof)
+        self.dof = np.array([self.dof[1], self.dof[0], self.dof[2]])
         self.actuator_origins = np.array(self.actuator_origins) / 1000
 
         self.actuator_forces = np.zeros(len(self.actuator_origins))
@@ -38,6 +38,7 @@ class JointData:
         origin = self.rotated_origin()
         ax.scatter3D(origin[0], origin[1], origin[2])
         actuator_origins = self.rotated_actuator_origins()
+        # print(f"{self.name}: {actuator_origins[0, 1, :]}")
         for i in range(len(actuator_origins)):
             ax.plot3D(
                 actuator_origins[i, :, 0].flatten(),
@@ -95,11 +96,11 @@ class JointData:
     def joint_rot_matrix(self) -> R:
         return R.from_euler('XYZ', self.angles)
 
-    def rotated_origin(self) -> np.ndarray:
+    def rotated_origin(self, chain: bool = True) -> np.ndarray:
         # Rotate origin based on parent joint angle
-        if self.parent:
+        if self.parent and chain:
             return self.parent.joint_rot_matrix().apply(
-                self.origin - self.parent.rotated_origin()) + self.parent.rotated_origin()
+                self.origin - self.parent.origin) + self.parent.rotated_origin()
 
         return self.origin
 
@@ -110,7 +111,7 @@ class JointData:
         actuator_origins = actuator_origins + self.origin
 
         if self.parent and chain:
-            actuator_origins = actuator_origins - self.parent.rotated_origin()
+            actuator_origins = actuator_origins - self.parent.origin
             for r in range(actuator_origins.shape[0]):
                 actuator_origins[r, :] = self.parent.joint_rot_matrix().apply(actuator_origins[r, :])
             actuator_origins = actuator_origins + self.parent.rotated_origin()
@@ -155,4 +156,4 @@ class JointData:
         # force = np.linalg.lstsq(torque_dirs, torque_setpt, rcond=None)
         force = np.linalg.inv(torque_dirs) @ torque_setpt
 
-        return force[0]
+        return force

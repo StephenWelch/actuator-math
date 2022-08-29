@@ -18,9 +18,9 @@ def log_calc(joint):
     ...
 
 def plot_all():
-    ax.axes.set_xlim3d(left=-500, right=500) 
-    ax.axes.set_ylim3d(bottom=-500, top=500) 
-    ax.axes.set_zlim3d(bottom=-1500, top=0) 
+    ax.axes.set_xlim3d(left=-500/1000, right=500/1000)
+    ax.axes.set_ylim3d(bottom=-500/1000, top=500/1000)
+    ax.axes.set_zlim3d(bottom=-1500/1000, top=0)
     for joint in ALL_JOINTS:
         joint.plot_matplotlib(ax)
 
@@ -105,9 +105,9 @@ def add_single_force_slider(ax, joint: JointData, label: str, magnitude_range: T
     return slider
 
 def main():
-    knee_angle_slider = add_angle_slider(ax, RL4_KNE_PIT, 'Knee Pitch', (-90, 90), 0)
-    knee_force_slider = add_single_force_slider(ax, RL4_KNE_PIT, 'Knee Force', (0, 100), 0)
-    ankle_pitch_slider = add_angle_slider(ax, RL5_ANK, 'Ankle Pitch', (-90, 90), 0)
+    # knee_angle_slider = add_angle_slider(ax, RL4_KNE_PIT, 'Knee Pitch', (-90, 90), 0)
+    # knee_force_slider = add_single_force_slider(ax, RL4_KNE_PIT, 'Knee Force', (0, 100), 0)
+    # ankle_pitch_slider = add_angle_slider(ax, RL5_ANK, 'Ankle Pitch', (-90, 90), 0)
 
     plot_all()
     plt.show()
