@@ -48,9 +48,9 @@ class JointData:
         origin = self.rotated_origin()
         fig.add_scatter3d(
             name=self.name + ' Origin',
-            x=origin[0:1],
-            y=origin[1:2],
-            z=origin[2:3],
+            x=np.array(origin[0:1])*1000,
+            y=np.array(origin[1:2])*1000,
+            z=np.array(origin[2:3])*1000,
             marker=dict(size=6, color='red')
         )
         return fig
@@ -68,9 +68,9 @@ class JointData:
         for i in range(len(closest_mounts)):
             fig.add_scatter3d(
                 name=self.name + ' Actuator mount',
-                x=[origin[0]] + [closest_mounts[i][0]],
-                y=[origin[1]] + [closest_mounts[i][1]],
-                z=[origin[2]] + [closest_mounts[i][2]],
+                x=np.array([origin[0]] + [closest_mounts[i][0]])*1000,
+                y=np.array([origin[1]] + [closest_mounts[i][1]])*1000,
+                z=np.array([origin[2]] + [closest_mounts[i][2]])*1000,
                 mode='lines',
                 line=dict(width=10, color='black', dash='dot')
             )
@@ -85,9 +85,9 @@ class JointData:
             # )
             fig.add_scatter3d(
                 name=self.name + ' Actuator',
-                x=actuator_origins[i, :, 0].flatten(),
-                y=actuator_origins[i, :, 1].flatten(),
-                z=actuator_origins[i, :, 2].flatten(),
+                x=actuator_origins[i, :, 0].flatten() * 1000,
+                y=actuator_origins[i, :, 1].flatten() * 1000,
+                z=actuator_origins[i, :, 2].flatten() * 1000,
                 marker=dict(size=4),
                 line=dict(color='blue')
             )
@@ -152,7 +152,12 @@ class JointData:
         torque_dirs = np.delete(torque_dirs, self.dof == 0, axis=0)
         torque_setpt = np.delete(self.torques, self.dof == 0, axis=0)
 
-        # force = np.linalg.lstsq(torque_dirs, torque_setpt, rcond=None)
+        # print(self.dof)
+        # print(torque_dirs)
+        # print(torque_setpt)
+        #
+        # force = np.linalg.lstsq(torque_dirs, self.torques, rcond=None)
         force = np.linalg.inv(torque_dirs) @ torque_setpt
 
-        return force[0]
+        return force
+        # return force[0]
